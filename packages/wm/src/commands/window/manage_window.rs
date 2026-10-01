@@ -5,7 +5,9 @@ use wm_platform::{NativeWindow, RectDelta};
 
 use crate::{
   commands::{
-    container::{attach_container, set_focused_descendant},
+    container::{
+      attach_container, set_focused_descendant, tiling_insertion_target,
+    },
     window::run_window_rules,
   },
   models::{
@@ -173,7 +175,7 @@ fn create_window(
   // provided), otherwise, add as a sibling of the focused container.
   let (target_parent, target_index) = match target_parent {
     Some(parent) => (parent, 0),
-    None => insertion_target(&window_state, state)?,
+    None => insertion_target(&window_state, state, config)?,
   };
 
   let target_workspace =
@@ -318,10 +320,15 @@ fn window_state_to_create(
 ///      tiling window found.
 ///   3. If no tiling windows exist, append to the workspace.
 ///
+/// When inserting after a tiling window, the tiling direction around it
+/// may first be changed based on the configured `TilingLayout` (see
+/// `tiling_insertion_target`).
+///
 /// Returns tuple of (parent container, insertion index).
 fn insertion_target(
   window_state: &WindowState,
-  state: &WmState,
+  state: &mut WmState,
+  config: &UserConfig,
 ) -> anyhow::Result<(Container, usize)> {
   let focused_container =
     state.focused_container().context("No focused container.")?;
@@ -333,17 +340,14 @@ fn insertion_target(
   // next to.
   if *window_state == WindowState::Tiling {
     let sibling = match focused_container {
-      Container::TilingWindow(_) => Some(focused_container),
+      Container::TilingWindow(tiling_window) => Some(tiling_window),
       _ => focused_workspace
         .descendant_focus_order()
-        .find(Container::is_tiling_window),
+        .find_map(|descendant| descendant.as_tiling_window().cloned()),
     };
 
     if let Some(sibling) = sibling {
-      return Ok((
-        sibling.parent().context("No parent.")?,
-        sibling.index() + 1,
-      ));
+      return tiling_insertion_target(&sibling, state, config);
     }
   }
 

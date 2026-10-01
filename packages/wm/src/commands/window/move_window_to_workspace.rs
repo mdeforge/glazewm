@@ -1,10 +1,12 @@
 use anyhow::Context;
 use tracing::info;
-use wm_common::WindowState;
 
 use crate::{
   commands::{
-    container::{move_container_within_tree, set_focused_descendant},
+    container::{
+      move_container_within_tree, set_focused_descendant,
+      tiling_insertion_target,
+    },
     workspace::activate_workspace,
   },
   models::{WindowContainer, WorkspaceTarget},
@@ -84,17 +86,19 @@ pub fn move_window_to_workspace(
 
     let insertion_sibling = target_workspace
       .descendant_focus_order()
-      .filter_map(|descendant| descendant.as_window_container().ok())
-      .find(|descendant| descendant.state() == WindowState::Tiling);
+      .find_map(|descendant| descendant.as_tiling_window().cloned());
 
     // Insert the window into the target workspace.
     match (window.is_tiling_window(), insertion_sibling.is_some()) {
       (true, true) => {
         if let Some(insertion_sibling) = insertion_sibling {
+          let (target_parent, target_index) =
+            tiling_insertion_target(&insertion_sibling, state, config)?;
+
           move_container_within_tree(
             &window.clone().into(),
-            &insertion_sibling.clone().parent().context("No parent.")?,
-            insertion_sibling.index() + 1,
+            &target_parent,
+            target_index,
             state,
           )?;
         }

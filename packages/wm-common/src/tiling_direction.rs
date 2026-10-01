@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use anyhow::bail;
 use serde::{Deserialize, Serialize};
-use wm_platform::Direction;
+use wm_platform::{Direction, Rect};
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "snake_case")]
@@ -43,6 +43,33 @@ impl TilingDirection {
     match direction {
       Direction::Left | Direction::Right => Self::Horizontal,
       Direction::Up | Direction::Down => Self::Vertical,
+    }
+  }
+
+  /// Gets the tiling direction that runs along the longer side of a
+  /// rect. Splitting the rect in this direction gives the two halves that
+  /// are closest to square.
+  ///
+  /// Square rects get `TilingDirection::Vertical`.
+  ///
+  /// Example:
+  /// ```
+  /// # use wm_common::TilingDirection;
+  /// # use wm_platform::Rect;
+  /// let wide = Rect::from_xy(0, 0, 1920, 1080);
+  /// let dir = TilingDirection::from_longer_side(&wide);
+  /// assert_eq!(dir, TilingDirection::Horizontal);
+  ///
+  /// let tall = Rect::from_xy(0, 0, 1080, 1920);
+  /// let dir = TilingDirection::from_longer_side(&tall);
+  /// assert_eq!(dir, TilingDirection::Vertical);
+  /// ```
+  #[must_use]
+  pub fn from_longer_side(rect: &Rect) -> Self {
+    if rect.width() > rect.height() {
+      Self::Horizontal
+    } else {
+      Self::Vertical
     }
   }
 }

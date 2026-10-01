@@ -378,3 +378,24 @@ impl UserConfig {
     })
   }
 }
+
+#[cfg(test)]
+#[bon::bon]
+impl UserConfig {
+  /// Creates a mock `UserConfig` for use in tests.
+  ///
+  /// Defined here rather than in `test_utils` since it needs access to
+  /// private fields. Window rules are derived from `value` the same way
+  /// as when reading a config file.
+  #[builder]
+  pub fn mock(#[builder(default)] value: ParsedConfig) -> Self {
+    let window_rules_by_event = Self::window_rules_by_event(&value);
+
+    Self {
+      path: PathBuf::new(),
+      value,
+      value_str: String::new(),
+      window_rules_by_event,
+    }
+  }
+}

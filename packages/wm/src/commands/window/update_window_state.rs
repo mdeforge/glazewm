@@ -4,9 +4,10 @@ use wm_common::WindowState;
 
 use crate::{
   commands::container::{
-    move_container_within_tree, replace_container, resize_tiling_container,
+    move_container_within_tree, replace_container,
+    resize_tiling_container, tiling_insertion_target,
   },
-  models::{Container, InsertionTarget, WindowContainer},
+  models::{InsertionTarget, WindowContainer},
   traits::{CommonGetters, TilingSizeGetters, WindowGetters},
   user_config::UserConfig,
   wm_state::WmState,
@@ -61,24 +62,22 @@ fn set_tiling(
   // Get the position in the tree to insert the new tiling window. This
   // will be the window's previous tiling position if it has one, or
   // instead beside the last focused tiling window in the workspace.
-  let (target_parent, target_index) = insertion_target
-    .as_ref()
-    .map(|insertion_target| {
+  let (target_parent, target_index) =
+    if let Some(insertion_target) = &insertion_target {
       (
         insertion_target.target_parent.clone(),
         insertion_target.target_index,
       )
-    })
-    // Fallback to the last focused tiling window within the workspace.
-    .or_else(|| {
-      let focused_window = workspace
-        .descendant_focus_order()
-        .find(Container::is_tiling_window)?;
-
-      Some((focused_window.parent()?, focused_window.index() + 1))
-    })
-    // Default to inserting at the end of the workspace.
-    .unwrap_or((workspace.clone().into(), workspace.child_count()));
+    } else if let Some(focused_window) = workspace
+      .descendant_focus_order()
+      .find_map(|descendant| descendant.as_tiling_window().cloned())
+    {
+      // Fallback to the last focused tiling window within the workspace.
+      tiling_insertion_target(&focused_window, state, config)?
+    } else {
+      // Default to inserting at the end of the workspace.
+      (workspace.clone().into(), workspace.child_count())
+    };
 
   let tiling_window = window.to_tiling(config.value.gaps.clone());
 

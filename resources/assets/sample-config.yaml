@@ -101,6 +101,14 @@ window_behavior:
   # Allowed values: 'tiling', 'floating'.
   initial_state: 'tiling'
 
+  # How tiling windows are placed when they're automatically inserted
+  # beside another tiling window (e.g. when a window is opened).
+  # - 'manual': Insert in the current tiling direction, which only changes
+  #   via commands like `toggle-tiling-direction`.
+  # - 'dwindle': Split the window being inserted beside along its longer
+  #   side, so that windows spiral inward.
+  tiling_layout: 'manual'
+
   # Sets the default options for when a new window is created. This also
   # changes the defaults for when the state change commands, like
   # `set-floating`, are used without any flags.

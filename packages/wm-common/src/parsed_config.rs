@@ -173,6 +173,10 @@ pub struct WindowBehaviorConfig {
   /// changes the defaults for when the state change commands, like
   /// `set_floating`, are used without any flags.
   pub state_defaults: WindowStateDefaultsConfig,
+
+  /// How tiling windows are placed when they're automatically inserted
+  /// beside another tiling window (e.g. when a window is opened).
+  pub tiling_layout: TilingLayout,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
@@ -181,6 +185,19 @@ pub enum InitialWindowState {
   #[default]
   Tiling,
   Floating,
+}
+
+#[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum TilingLayout {
+  /// Insert in the current tiling direction, which only changes via
+  /// commands like `toggle-tiling-direction`.
+  #[default]
+  Manual,
+
+  /// Split the window being inserted beside along its longer side, so
+  /// that windows spiral inward (similar to Hyprland's dwindle layout).
+  Dwindle,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
