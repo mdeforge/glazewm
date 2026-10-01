@@ -297,13 +297,19 @@ window_effects:
 
 ### 配置：窗口行为
 
-`window_behavior` 配置选项用于自定义窗口可以处于的状态（`tiling`、`floating`、`minimized` 和 `fullscreen`）。
+`window_behavior` 配置选项用于自定义窗口可以处于的状态（`tiling`、`floating`、`minimized` 和 `fullscreen`），以及新平铺窗口的放置方式。
 
 ```yaml
 window_behavior:
   # 新窗口在可能的情况下以此状态创建。
   # 允许的值：'tiling'、'floating'。
   initial_state: "tiling"
+
+  # 平铺窗口被自动插入到另一个平铺窗口旁边时（例如打开新窗口时）的放置方式。
+  # - 'manual'：按当前平铺方向插入，平铺方向只能通过
+  #   `toggle-tiling-direction` 等命令更改。
+  # - 'dwindle'：沿被插入窗口的较长边进行分割，使窗口呈螺旋状向内排列。
+  tiling_layout: "manual"
 
   # 设置创建新窗口时的默认选项。这也会更改状态更改命令
   # （如 `set-floating`）在不使用任何标志时的默认值。
@@ -355,7 +361,9 @@ binding_modes:
 
 您可以通过使用 `alt+v` 更改平铺方向来创建自定义布局。这会改变下一个窗口相对于当前窗口的放置位置。如果当前窗口的方向是水平的，新窗口将放置在其右侧。如果是垂直的，将放置在其下方。这也适用于移动窗口；固定窗口的平铺方向将影响移动窗口的放置位置。
 
-社区制作的脚本如 [Dutch-Raptor/GAT-GWM](https://github.com/Dutch-Raptor/GAT-GWM) 和 [burgr033/GlazeWM-autotiling-python](https://github.com/burgr033/GlazeWM-autotiling-python) 可用于自动更改平铺方向。目前不支持自动布局的原生支持。
+如需类似 Hyprland dwindle 的螺旋布局，请在 `window_behavior` 下设置 `tiling_layout: "dwindle"`（参见“配置：窗口行为”）。之后新窗口会沿当前窗口的较长边进行分割，平铺方向会自动选择。
+
+如需其他自动布局，可以使用社区制作的脚本，如 [Dutch-Raptor/GAT-GWM](https://github.com/Dutch-Raptor/GAT-GWM) 和 [burgr033/GlazeWM-autotiling-python](https://github.com/burgr033/GlazeWM-autotiling-python) 来更改平铺方向。
 
 **问：如何为 `<插入应用程序>` 创建规则？**
 

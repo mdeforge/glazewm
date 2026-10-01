@@ -305,13 +305,21 @@ window_effects:
 
 ### Config: Window behavior
 
-The `window_behavior` config option exists to customize the states that a window can be in (`tiling`, `floating`, `minimized`, and `fullscreen`).
+The `window_behavior` config option exists to customize the states that a window can be in (`tiling`, `floating`, `minimized`, and `fullscreen`), and how new tiling windows are placed.
 
 ```yaml
 window_behavior:
   # New windows are created in this state whenever possible.
   # Allowed values: 'tiling', 'floating'.
   initial_state: "tiling"
+
+  # How tiling windows are placed when they're automatically inserted
+  # beside another tiling window (e.g. when a window is opened).
+  # - 'manual': Insert in the current tiling direction, which only changes
+  #   via commands like `toggle-tiling-direction`.
+  # - 'dwindle': Split the window being inserted beside along its longer
+  #   side, so that windows spiral inward.
+  tiling_layout: "manual"
 
   # Sets the default options for when a new window is created. This also
   # changes the defaults for when the state change commands, like
@@ -364,7 +372,9 @@ Right-click the GlazeWM icon in the system tray and select "Run on system startu
 
 You can create custom layouts by changing the tiling direction with `alt+v`. This changes where the next window is placed _in relation to the current window_. If the current window's direction is horizontal, the new window will be placed to the right of it. If it is vertical, it will be placed below it. This also applies when moving windows; the tiling direction of the stationary window will affect where the moved window will be placed.
 
-Community-made scripts like [Dutch-Raptor/GAT-GWM](https://github.com/Dutch-Raptor/GAT-GWM) and [burgr033/GlazeWM-autotiling-python](https://github.com/burgr033/GlazeWM-autotiling-python) can be used to automatically change the tiling direction. Native support for automatic layouts isn't _currently_ supported.
+For a spiral layout similar to Hyprland's dwindle, set `tiling_layout: "dwindle"` under [`window_behavior`](#config-window-behavior). New windows then split the current window along its longer side, so the tiling direction is chosen automatically.
+
+For other automatic layouts, community-made scripts like [Dutch-Raptor/GAT-GWM](https://github.com/Dutch-Raptor/GAT-GWM) and [burgr033/GlazeWM-autotiling-python](https://github.com/burgr033/GlazeWM-autotiling-python) can be used to change the tiling direction.
 
 **Q: How do I create a rule for `<insert application>`?**
 
